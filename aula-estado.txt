@@ -1,0 +1,579 @@
+
+
+import { useSelector } from "react-redux";
+import { RootSate } from "../redux/store";
+
+export default function ListagemProdutos() {
+  const produto = useSelector((state: RootSate) => state.produto);
+
+  return (
+    <div>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Preço</th>
+            <th>Estoque</th>
+          </tr>
+        </thead>
+        <tbody>
+          {produto.produtos.map((produto) => {
+            return (
+              <tr>
+                <th>{produto.id}</th>
+                <th>{produto.nome}</th>
+                <th>{produto.preco}</th>
+                <th>{produto.estoque}</th>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+//produto.slice.ts
+
+import { createSlice } from "@reduxjs/toolkit";
+
+interface Produto {
+  id: number;
+  nome: string;
+  preco: number;
+  estoque: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ProdutosState {
+  produtos: Produto[];
+}
+
+const initialState: ProdutosState = {
+  produtos: [],
+};
+
+const produtoSlice = createSlice({
+  name: "produtoSlice",
+  initialState: initiaState,
+  reducers: {
+    addProduto(state, action) {
+      state.produtos.push(action.payload);
+    },
+  },
+});
+
+export const { addProduto } = produtoSlice.actions;
+export default produtoSlice.reducer;
+
+
+// App.tsx
+import "./App.css";
+import ListagemProdutos from "./components/listProdutos";
+import { increment } from "./redux/features/count.slice";
+
+// npx create-react-app redux_teste --template typescript
+
+function App() {
+  return (
+    	<div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyItems: "center",
+      }}
+    >
+      <div style={{ width: "50%" }}>
+        <ListagemProdutos />
+      </div>
+    </div>
+  );
+}
+
+export default App;
+
+// bootstrap instalar
+npm install reactstrap react react-dom
+npm install --save bootstrap
+npm i reactstrap
+npm i react-bootstrap
+
+
+
+// formProdutos.tsx
+
+
+import { useState } from "react";
+import { useDispatch } from "react-redux";
+
+import "bootstrap/dist/css/bootstrap.min.css";
+import "react-bootstrap";
+import { AppDispatch } from "../redux/store";
+import { addProduto } from "../redux/features/produto.slice";
+
+export default function FormularioProduto() {
+  const dispatch = useDispatch<AppDispatch>();
+
+  const [inputProduto, SetProduto] = useState({
+    nome: "",
+    preco: 0,
+    estoque: 0,
+  });
+
+  const handleInput = (e: any) => {
+    SetProduto({ ...inputProduto, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e: any) => {
+    e.preventDefault();
+    dispatch(addProduto(inputProduto));
+  };
+
+  return (
+    <div
+      style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+    >
+      <h3 className="mt-3">Inserir Novo Produto</h3>
+      <form onSubmit={handleSubmit}>
+        <div className="row mb-3">
+          <label className="col-sm-3 col-form-lable">Nome</label>
+          <div className="col-md-8">
+            <input
+              type="text"
+              className="forrm-control"
+              name="nome"
+              value={inputProduto.nome}
+              onChange={handleInput}
+            />
+          </div>
+        </div>
+
+        <div className="row mb-3">
+          <label className="col-sm-3 col-form-lable">Preço</label>
+          <div className="col-md-8">
+            <input
+              type="number"
+              className="form-control"
+              name="preco"
+              value={inputProduto.preco}
+              onChange={handleInput}
+            />
+          </div>
+        </div>
+
+        <div className="row mb-3">
+          <label className="col-sm-3 col-form-lable">Estoque</label>
+          <div className="col-md-8">
+            <input
+              type="number"
+              className="form-control"
+              name="estoque"
+              value={inputProduto.estoque}
+              onChange={handleInput}
+            />
+          </div>
+        </div>
+
+        <div className="row mb-3">
+          <label className="col-sm-3 col-form-lable"></label>
+          <div className="col-md-1">
+            <button type="submit" className="btn btn-primary bnt-lg">
+              Submit
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+npm i redux-persist
+version
+"redux-persist": "^6.0.0",
+
+import { persistStore, persistReducer } from "redux-persist";
+import storage from "redux-persist/lib/storage";
+
+https://github.com/rt2zz/redux-persist
+
+
+// store.ts
+import { combineReducers, configureStore } from "@reduxjs/toolkit";
+import ProdutoReducer from "./features/produto.slice";
+import { persistStore, persistReducer } from "redux-persist";
+import storage from "redux-persist/lib/storage";
+i
+const rooReducer = combineReducers({
+  produto: ProdutoReducer,
+});
+
+const persistConfig = {
+  key: "root",
+  storage,
+};
+
+const persistedReducer = persistReducer(persistConfig, rooReducer);
+
+export const store = configureStore({
+  reducer: persistedReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
+});
+export const persistor = persistStore(store);
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+
+
+//pages/login/index.tsx
+import { useState } from "react";
+import { Button } from "reactstrap";
+import "./index.css";
+
+export default function Login() {
+  const [email, SetEmail] = useState();
+  const [password, SetPassword] = useState("");
+
+  return (
+    <form style={{ width: "300px" }} className="container">
+      <div>
+        <h6>Loja Virtual</h6>
+      </div>
+
+      <input placeholder="Digite seu email" />
+      <input placeholder="Digite sua senha" />
+
+      <Button>Login</Button>
+    </form>
+  );
+}
+
+//pages/login/index.css
+.container {
+  min-height: 100vh;
+  align-items: center;
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  flex-direction: column;
+}
+
+
+//index.tsx
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
+import { Provider } from "react-redux";
+import { persistor, store } from "./redux/store";
+import { PersistGate } from "redux-persist/integration/react";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Login from "./pages/login";
+
+// npm i react-router-dom
+const root = ReactDOM.createRoot(
+  document.getElementById("root") as HTMLElement
+);
+
+const router = createBrowserRouter([
+  { path: "/", element: <Login /> },
+  { path: "/home", element: <App /> },
+]);
+
+root.render(
+  <React.StrictMode>
+    <Provider store={store}>
+      <PersistGate persistor={persistor}>
+        <RouterProvider router={router} />
+      </PersistGate>
+    </Provider>
+  </React.StrictMode>
+);
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
+
+//index.tsx
+  "files": [
+    "./node_modules/redux-persist/types/storage/index.d.ts"
+  ],
+
+
+// api url
+https://ecb9-200-129-163-72.ngrok-free.app
+
+
+// npm i axios
+import axios from "axios";
+
+export const api = axios.create({
+  headers: {
+    "content-type": "application/json",
+  },
+});
+
+api.interceptors.response.use(
+  function (response) {
+    return response;
+  },
+  function (er) {
+    if (axios.isAxiosError(er)) {
+      if (er.response) {
+        if (er.response.status === 403) {
+          localStorage.removeItem("persist:root");
+          window.location.href = "/"; // Joga o usuario para a tela de login
+        }
+      }
+    }
+
+    return Promise.reject(er);
+  }
+);
+
+
+//features/api.login.slice.ts
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { AxiosResponse } from "axios";
+import { api } from "../../services/instanceAxios";
+
+interface ApiState {
+  loading: boolean;
+  data: object;
+  error: string;
+  isSucess: boolean;
+  isAdmin: boolean;
+}
+
+const initialState: ApiState = {
+  loading: false,
+  data: {},
+  error: "",
+  isSucess: false,
+  isAdmin: false,
+};
+
+//dispatch(doLogin(email, senha))
+export const doLogin = createAsyncThunk(
+  "api/login",
+  async (dataLogin: object) => {
+    const response: AxiosResponse = await api.post(
+      "http://localhost:3333/v1/login",
+      dataLogin,
+      { withCredentials: true }
+    );
+
+    return { payload: response.data, status: response.status };
+  }
+);
+
+const apiLoginSlice = createSlice({
+  name: "apiLogin",
+  initialState,
+  reducers: {
+    logout(state) {
+      state = initialState;
+      return state;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(doLogin.pending, (state) => {
+        state.loading = true;
+        state.error = "";
+        state.isSucess = false;
+      })
+      .addCase(doLogin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = action.payload;
+        state.isAdmin = action.payload.payload.isAdmin;
+        if (action.payload.status === 200) {
+          state.isSucess = true;
+        }
+      })
+      .addCase(doLogin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message ?? "";
+        state.isSucess = false;
+      });
+  },
+});
+export const { logout } = apiLoginSlice.actions;
+export const { reducer: apiLoginReducer } = apiLoginSlice;
+export default apiLoginSlice;
+
+
+//auth.service.ts
+export const checkIsAdmin = async (id: string): Promise<boolean> => {
+  const usuario = await Usuario.findOne({ where: { id } });
+  if (!usuario) return false;
+  return usuario.tipoUsuarioId === TiposUsuarios.ADMIN;
+};
+
+
+export enum TiposUsuarios {
+  'ADMIN' = '7edd25c6-c89e-4c06-ae50-c3c32d71b8ad',
+  'CLIENT' = '6a4cda94-fbb6-476b-be29-f4124cae9058',
+}
+
+
+//login/index.tsx
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { Button } from "reactstrap";
+import { doLogin } from "../../redux/features/api.login.slice";
+import { AppDispatch, RootSate } from "../../redux/store";
+import "./index.css";
+
+export default function Login() {
+  const dispatch = useDispatch<AppDispatch>(); //essa linha
+  const navigate = useNavigate();
+
+  const stateLogin = useSelector((state: RootSate) => state.login);
+
+  const [email, SetEmail] = useState("");
+  const [password, SetPassword] = useState("");
+
+  // essa função
+  function TryLogin() {
+    dispatch(
+      doLogin({
+        email: email,
+        password: password,
+      })
+    );
+  }
+
+  useEffect(() => {
+    if (stateLogin.isSucess) {
+      navigate("/home");
+    }
+  }, [stateLogin.isSucess]);
+
+  return (
+    <form style={{ width: "300px" }} className="container">
+      <div>
+        <h6>Loja Virtual</h6>
+      </div>
+
+      <input
+        placeholder="Digite seu email"
+        onChange={(e) => SetEmail(e.target.value)}
+      />
+      <input
+        placeholder="Digite sua senha"
+        onChange={(e) => SetPassword(e.target.value)}
+      />
+
+      <Button onClick={() => TryLogin()}>Login</Button>
+    </form>
+  );
+}
+
+// api url
+https://ecb9-200-129-163-72.ngrok-free.app
+
+export enum TiposUsuarios {
+  CLIENTE = '6a4cda94-fbb6-476b-be29-f4124cae9058',
+  ADMIN = '7edd25c6-c89e-4c06-ae50-c3c32d71b8ad',
+}
+
+
+//features/produto.slice.ts'
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import axios, { AxiosResponse } from "axios";
+import { api } from "../../services/instanceAxios";
+
+export interface Produto {
+  id?: string;
+  nome: string;
+  preco: number;
+  estoque: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+interface ApiState {
+  loading: boolean;
+  produtos: Produto[];
+  error: string;
+}
+
+const initialState: ApiState = {
+  loading: false,
+  produtos: [],
+  error: "",
+};
+
+export const fetchProdutos = createAsyncThunk<Produto[]>(
+  "api/get/produtos",
+  async () => {
+    const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
+    await wait(1000);
+
+    const response: AxiosResponse<Produto[]> = await axios.get(
+      "http://localhost:3333/v1/produto"
+    );
+
+    return response.data;
+  }
+);
+
+// export const addProduto = createAsyncThunk(
+//   "api/post/produto",
+//   async (produto: Produto) => {
+//     const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
+//     await wait(1000);
+
+//     const response: AxiosResponse<Produto> = await api.post(
+//       "http://localhost:3333/v1/produto",
+//       produto,
+//       { withCredentials: true }
+//     );
+
+//     return response.data;
+//   }
+// );
+
+const apiProdutoSlice = createSlice({
+  name: "apiProduto",
+  initialState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetcdhProdutos.pending, (state) => {
+        state.loading = true;
+        state.error = "";
+      })
+      .addCase(
+        fetchProdutos.fulfilled,
+        (state, action: PayloadAction<Produto[]>) => {
+          state.loading = false;
+          state.produtos = action.payload;
+        }
+      )
+      .addCase(fetchProdutos.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message ?? "";
+      });
+    // .addCase(
+    //   addProduto.fulfilled,
+    //   (state, action: PayloadAction<Produto>) => {
+    //     state.loading = false;
+    //     state.produtos.push(action.payload);
+    //   }
+    // );
+  },
+});
+
+export const { reducer: apiProdutoReducer } = apiProdutoSlice;
+
+
